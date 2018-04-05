@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Air Traffic</title>
+		<script type="text/javascript" src="js/flight_data.js"/></script>
+		<script type="text/javascript" src="js/location_request.js"/></script>
+		<script type="text/javascript" src="js/classes.js"/></script>
+		<link rel="stylesheet" type="text/css" href="css\style.css">
+		<link rel="shortcut icon" href="imgs/icon.png">
+	</head>
+	<body>
+    	<div id="wrapper"  class="flex-crossbrowser">
+		<header class="flex-crossbrowser">
+			<img src="imgs\logo.png" height="90" style="margin-left:30px" />
+		</header>
+		<div class="center flex-crossbrowser">
+		</div>
+	</div>
+
+	<script type="text/javascript">
+		function dataRead(seconds,showLoader){
+
+			loading = new loader('loader');
+			if(showLoader)loading.showIn();
+
+			flights = new Array();
+
+			var radius = 150;
+
+			var flightDataUrl = 'https://public-api.adsbexchange.com/VirtualRadar/AircraftList.json?refreshTrails=1&lat='+lat+'&lng='+long+'&fDstL=0&fDstU='+radius;
+			fetchFlightsData(flightDataUrl, function(data) {
+				flights = Object.keys(data["acList"]).map(i => data["acList"][i]);
+				flights.sort(HighToLowSortBy("Alt"));
+
+				loading.showOut();
+				printData();
+
+				setTimeout(function() {
+					dataRead(60,false);
+				}, (seconds*1000));
+			});
+		}
+		function printData(){
+			flightitems = new flight_items();
+
+			for (let i = 0; i < Object.keys(flights).length; i++) {
+				flightitems.printItem(i,flights[i]["Trak"],flights[i]["Alt"],flights[i]["Call"],flights[i]["Man"],flights[i]["Mdl"],flights[i]["From"],flights[i]["To"]);
+				setTimeout( function timer(){
+					var item =  document.getElementById("item"+i);
+					item.className =  "flex-crossbrowser item item_visible";
+				}, (i+1)*100 );
+			}
+		}
+		function locationAccessEvent(){
+			if(location_access){
+				dataRead(60,true);
+			}
+			else{
+				let geoaccessunavaible = new location_unavible('geoaccessunavaible');
+				setTimeout(function() { geoaccessunavaible.showIn(); }, 500);
+			}
+		}
+		document.addEventListener('DOMContentLoaded', function(){
+			if (typeof(Storage) !== "undefined") {
+        			if(typeof localStorage.authorizedGeoLocation == "undefined" || localStorage.authorizedGeoLocation == "0" ){
+					let geoaccess = new location_request('geoaccess');
+					setTimeout(function() { geoaccess.showIn(); }, 500);
+        			}
+        			else{
+        				requestLocationAccess();
+				}
+        		} else {
+				let geoaccess = new location_request('geoaccess');
+				setTimeout(function() { geoaccess.showIn(); }, 500);
+        		}
+		}, false);
+    </script>
+</body>
+</html>
