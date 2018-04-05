@@ -158,6 +158,10 @@ class flight_items{
 	showData(){
 		this.item_container.className="item_container_hidden";
 		setTimeout( function timer(){
+			this.item_container.style.display="-webkit-box";
+			this.item_container.style.display="-moz-box";
+			this.item_container.style.display="-ms-flexbox";
+			this.item_container.style.display="-webkit-flex";
 			this.item_container.style.display="flex";
 			this.item_container.className="item_container_visible";
 		},400 );
